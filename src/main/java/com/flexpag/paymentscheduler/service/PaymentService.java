@@ -1,9 +1,12 @@
 package com.flexpag.paymentscheduler.service;
 
 import com.flexpag.paymentscheduler.dto.PaymentDto;
-import com.flexpag.paymentscheduler.dto.PaymentRequestDto;
 import com.flexpag.paymentscheduler.entity.Payment;
 import com.flexpag.paymentscheduler.entity.PaymentStatus;
+import com.flexpag.paymentscheduler.exception.PaymentDeleteException;
+import com.flexpag.paymentscheduler.exception.PaymentNotFoundException;
+import com.flexpag.paymentscheduler.exception.PaymentNotSavedException;
+import com.flexpag.paymentscheduler.exception.PaymentUpdateException;
 import com.flexpag.paymentscheduler.mapper.PaymentMapper;
 import com.flexpag.paymentscheduler.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +25,10 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
 
-    public PaymentDto save(PaymentRequestDto paymentRequestDto) {
-        Payment payment = paymentMapper.mapToPayment(paymentRequestDto);
+    public PaymentDto savePayment(PaymentDto paymentDto) {
+        Payment payment = paymentMapper.mapToPayment(paymentDto);
         if (payment.getPayDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Unable to schedule payment. Verify the pay date.");
+            throw new PaymentNotSavedException("Cannot save payment schedule");
         }
         paymentRepository.save(payment);
         return paymentMapper.mapToPaymentDto(payment);
@@ -36,23 +39,28 @@ public class PaymentService {
     }
 
 
-    public PaymentDto checkPayment(Long id) {
-        return paymentMapper.mapToPaymentDto(getPayment(id));
+    public PaymentDto findPaymentById(Long id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new PaymentNotFoundException("Not found Payment with id + " + id));
+        return paymentMapper.mapToPaymentDto(payment);
     }
 
-    public PaymentDto updatePayDate(Long id, LocalDateTime newDateTime) {
-        Payment payment = getPayment(id);
-        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new RuntimeException("Cannot updated PAID payment");
+    public PaymentDto updatePaymentById(Long id, LocalDateTime newDate) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new PaymentNotFoundException("Not found Payment with id + " + id));
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING || newDate.isBefore(LocalDateTime.now())) {
+            throw new PaymentUpdateException("Error updating Payment with id = " + id);
         }
-        payment.setPayDate(newDateTime);
+        payment.setPayDate(newDate);
         paymentRepository.save(payment);
         return paymentMapper.mapToPaymentDto(payment);
     }
 
-    public void delete(Long id) {
-        if (getPayment(id).getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new RuntimeException("Cannot delete PAID payment");
+    public void deletePaymentById(Long id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new PaymentNotFoundException("Not found Payment with id + " + id));
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new PaymentDeleteException("Error deleting Payment with id = " + id);
         }
         paymentRepository.deleteById(id);
     }
@@ -74,9 +82,9 @@ public class PaymentService {
         paymentRepository.saveAll(payments);
     }
 
-    private Payment getPayment(Long id) {
-        return paymentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cannot find payment with Id " + id));
-    }
+//    private Payment getPayment(Long id) {
+//        return paymentRepository.findById(id)
+//                .orElseThrow(() -> new PaymentNotFoundException(id));
+//    }
 
 }
