@@ -1,7 +1,6 @@
 package com.flexpag.paymentscheduler.mapper;
 
 import com.flexpag.paymentscheduler.dto.PaymentDto;
-import com.flexpag.paymentscheduler.dto.PaymentRequestDto;
 import com.flexpag.paymentscheduler.entity.Payment;
 import com.flexpag.paymentscheduler.entity.PaymentStatus;
 import org.springframework.stereotype.Component;
@@ -9,12 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PaymentMapper {
 
-    public Payment mapToPayment(PaymentRequestDto paymentRequestDto) {
+    public Payment mapToPayment(PaymentDto paymentDto) {
         return Payment.builder()
-                .client(paymentRequestDto.getClient())
-                .amount(paymentRequestDto.getAmount())
+                .client(paymentDto.getClient())
+                .amount(paymentDto.getAmount())
                 .paymentStatus(PaymentStatus.PENDING)
-                .payDate(paymentRequestDto.getPayDate())
+                .payDate(paymentDto.getPayDate())
                 .build();
     }
 

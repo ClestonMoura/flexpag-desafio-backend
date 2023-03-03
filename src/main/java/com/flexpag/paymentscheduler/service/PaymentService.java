@@ -7,10 +7,11 @@ import com.flexpag.paymentscheduler.entity.PaymentStatus;
 import com.flexpag.paymentscheduler.mapper.PaymentMapper;
 import com.flexpag.paymentscheduler.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,13 +57,21 @@ public class PaymentService {
         paymentRepository.deleteById(id);
     }
 
-    public void updatePaymentStatus(List<Payment> payments) {
-        List<Payment> updatedPayments = new ArrayList<>();
-        for (Payment payment : payments) {
-            payment.setPaymentStatus(PaymentStatus.PAID);
-            updatedPayments.add(payment);
+    @Scheduled(cron = "@hourly")
+    @Async
+    public void updatePaymentStatus() {
+        List<Payment> payments = findAllPayments().stream().map(paymentMapper::mapToPayment)
+                .collect(Collectors.toList());
+        if (payments.isEmpty()) {
+            return;
         }
-        paymentRepository.saveAll(updatedPayments);
+        LocalDateTime now = LocalDateTime.now();
+        for (Payment payment : payments) {
+            if (payment.getPayDate().isAfter(now)) {
+                payment.setPaymentStatus(PaymentStatus.PAID);
+            }
+        }
+        paymentRepository.saveAll(payments);
     }
 
     private Payment getPayment(Long id) {
