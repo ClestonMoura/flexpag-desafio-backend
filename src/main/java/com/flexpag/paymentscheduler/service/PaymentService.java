@@ -23,6 +23,9 @@ public class PaymentService {
 
     public PaymentDto save(PaymentRequestDto paymentRequestDto) {
         Payment payment = paymentMapper.mapToPayment(paymentRequestDto);
+        if (payment.getPayDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Unable to schedule payment. Verify the pay date.");
+        }
         paymentRepository.save(payment);
         return paymentMapper.mapToPaymentDto(payment);
     }
@@ -36,16 +39,19 @@ public class PaymentService {
         return paymentMapper.mapToPaymentDto(getPayment(id));
     }
 
-    public PaymentDto updatePayDate(Long id, LocalDateTime localDateTime) {
+    public PaymentDto updatePayDate(Long id, LocalDateTime newDateTime) {
         Payment payment = getPayment(id);
-        payment.setPayDate(localDateTime);
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new RuntimeException("Cannot updated PAID payment");
+        }
+        payment.setPayDate(newDateTime);
         paymentRepository.save(payment);
         return paymentMapper.mapToPaymentDto(payment);
     }
 
     public void delete(Long id) {
         if (getPayment(id).getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new RuntimeException("Cannot delete a PAID payment");
+            throw new RuntimeException("Cannot delete PAID payment");
         }
         paymentRepository.deleteById(id);
     }
