@@ -2,7 +2,7 @@ package com.flexpag.paymentscheduler.mapper;
 
 import com.flexpag.paymentscheduler.dto.PaymentDto;
 import com.flexpag.paymentscheduler.entity.Payment;
-import com.flexpag.paymentscheduler.entity.PaymentStatus;
+import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
 import org.springframework.stereotype.Component;
 
 @Component

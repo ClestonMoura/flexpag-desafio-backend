@@ -1,5 +1,6 @@
 package com.flexpag.paymentscheduler.entity;
 
+import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
 import lombok.*;
 
 import javax.persistence.*;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Payment {
+public class Payment implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

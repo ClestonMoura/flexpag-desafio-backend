@@ -11,5 +11,4 @@ public class ErrorMessage {
     private Integer statusCode;
     private LocalDateTime timestamp;
     private String message;
-    private String description;
 }

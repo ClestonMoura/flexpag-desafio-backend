@@ -1,94 +1,67 @@
-<p align="center">
- <img src="https://github.com/jsantos-examples/flexpag-desafio-backend/blob/main/contents/flexpag.png" width="600" alt="Banner Flexpag">
-</p>
+# Automated Payment Scheduler
 
-# 🚀 Desafio backend
+API de agendamento de pagamentos automatizados. 
+Aplicação para fins de avaliação do desafio Flexpag Back end.
 
-Bem-vindo(a). Este é o desafio Back end!
+A solução desenvolvida segue o contexto e fluxo esperado estabelecidos no desafio.
+Além disto, a aplicação realiza o pagamento de agendamentos de forma automática checando
+a `data:hora` de cada pagamento salvo.
+Os detalhes mais complexos da solução se resumem a criação de `excepiton handling`
+customizados.
 
-O objetivo deste desafio é avaliar suas habilidades em programação.
-Quando concluir o desafio, basta responder o e-mail onde recebeu o link do repositório.
-Em seguida, enviaremos o feedback e as instruções dos próximos passos!
+## Entidades
 
-Caso tenha alguma dúvida, nós estamos disponíveis para tirá-las.
-Bom desafio!
+A API possui apenas uma entidade: _PAYMENT_
 
-> ⚠️ **É importante que o seu repo esteja público, caso contrário não iremos conseguir avaliar sua resposta**
+| Campo        | Tipo                   |
+|--------------|------------------------|
+| _ID_         | BIGINT                 |
+| _AMOUNT_     | DOUBLE PRECISION       |
+| _CLIENT_     | CHARACTER VARYING(255) |
+| _PAY_DATE_   | TIMESTAMP              |
+| _PAY_STATUS_ | CHARACTER VARYING(255) |
 
----
+## API
 
-- [🧠 Contexto](#-contexto)
-  - [🚰 Fluxo esperado](#-fluxo-esperado)
-- [✔️ Critérios de Avaliação](#️-critérios-de-avaliação)
-- [:rocket: Instruções](#rocket-instruções)
-  - [:notebook: To-do list](#notebook-to-do-list)
+As seguintes rotas estão disponíveis pela API:
 
-# 🧠 Contexto
+### `GET /api/payments`
+* Retorna uma lista de todos os _payments_.
 
-A Flexpag é uma empresa de tecnologia especializada em soluções digitais de pagamento. Sabendo disso, montamos um desafio que consiste em implementar um serviço de pagamento agendando.
+### `GET /api/payments/{id}`
+* Retorna um _payment_ identificado pelo parâmetro de caminho _id_.
+* Esta rota deve ser usada para verificar o _paymentStatus_.
 
-### 🚰 Fluxo esperado
-
-- Quando um agendamento é enviado deve ser registrado como `pending` e retornado o id;
-- O usuário deve conseguir consultar o status do agendamento `pending`|`paid`;
-- :warning: **Se o pagamento ainda não foi realizado o usuário pode**;
-  - Excluir o agendamento;
-  - Atualizar a data:hora do agendamento;
-  
-## ✔️ Critérios de Avaliação
-
-Além dos requisitos levantados acima, iremos olhar para os seguintes critérios durante a correção do desafio:
-
-- Eficiência e simplicidade;
-
-## :rocket: Instruções
-
-Chegou a hora de colocar a mão na massa!
-
-### Aplicação
-
-A aplicação já está com o pre setup default. 
-
-**dependências:**
-- spring-boot-starter-web
-- spring-boot-starter-data-jpa
-- spring-boot-devtools
-- h2
-- lombok
-
-| componente | porta |
-| --------- | ----------- |
-| Aplicação  | `8080` |
-
-aplication.yaml foi configurado para apontar para o banco local h2
-```
-spring:
-  datasource:
-    driverClassName: org.h2.Driver
-    url: jdbc:h2:mem:payment-scheduler
-    username: admin
-    password: admin
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
+### `POST /api/payments`
+* Cria um novo agendamento com `client`, `amount` e `payDate` especificados.
+* Retorna o _payment_ criado.
+* Exemplo de envio do json:
+```JSON
+{
+  "client": "client1",
+  "amount": 2000.65,
+  "payDate": "2023-03-04T14:27:00"
+}
 ```
 
-### :notebook: To-do list
-- [ ] Fazer o fork do projeto
-- [ ] Implementar solução
-- [ ] Enviar link do projeto
+### `PUT /api/payments/{id}?newDate={newDate}`
+* Modifica o `paydate` de um _payment_ salvo.
+* Retorna o _payment_ modificado. 
+Uma _exception_ será retornada caso a nova data seja inválida ou se o 
+`paymentStatus` seja `PAID`.
 
-:information_source: _Sinta-se livre para incluir quaisquer observações que achar necessário_
+### `DELETE /api/payments/{id}`
+* Deleta um _payment_ existente identificado pelo parâmetro de caminho _id_.
+* Uma _exception_ será retornada caso o `paymentStatus` seja `PAID`.
 
----
+## Pagamentos automatizados
 
-_O desafio acima foi cuidadosamente construído para propósitos de avaliação apenas._
+A API mudará os status de pagamento para `paid` automaticamente quando os prazos
+de cada pagamento vencer. Em virtude disto, não há a implementação de uma rota
+para modificar o status manualmente.
+
+A automatização foi implementada usando as ferramentas padrões de `scheduling` do
+Spring Boot, e a lógica da implementação se encontra na camada de serviço. O 
+desenpenho da implementação leva em consideração apenas os pagamentos que já
+venceram e os de status `PENDNG`.
+
