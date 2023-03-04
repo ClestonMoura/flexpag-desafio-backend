@@ -22,9 +22,11 @@ public class PaymentController {
     @GetMapping
     public ResponseEntity<List<PaymentDto>> getAllPayments() {
         List<PaymentDto> paymentDtoList = paymentService.findAllPayments();
+
         if (paymentDtoList.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+
         return new ResponseEntity<>(paymentDtoList, HttpStatus.OK);
     }
 

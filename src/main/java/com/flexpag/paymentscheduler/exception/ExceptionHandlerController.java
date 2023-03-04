@@ -53,7 +53,7 @@ public class ExceptionHandlerController {
                 AppConstants.ENTITY_NOT_DELETED,
                 LocalDateTime.now(),
                 ex.getMessage());
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(message, HttpStatus.FORBIDDEN);
     }
 
 }

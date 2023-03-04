@@ -1,7 +1,7 @@
 package com.flexpag.paymentscheduler.repository;
 
 import com.flexpag.paymentscheduler.entity.Payment;
-import com.flexpag.paymentscheduler.entity.PaymentStatus;
+import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;

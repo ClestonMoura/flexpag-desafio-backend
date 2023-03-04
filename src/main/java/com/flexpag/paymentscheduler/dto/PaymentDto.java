@@ -1,6 +1,6 @@
 package com.flexpag.paymentscheduler.dto;
 
-import com.flexpag.paymentscheduler.entity.PaymentStatus;
+import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

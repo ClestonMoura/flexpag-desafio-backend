@@ -2,7 +2,7 @@ package com.flexpag.paymentscheduler.service;
 
 import com.flexpag.paymentscheduler.dto.PaymentDto;
 import com.flexpag.paymentscheduler.entity.Payment;
-import com.flexpag.paymentscheduler.entity.PaymentStatus;
+import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
 import com.flexpag.paymentscheduler.exception.*;
 import com.flexpag.paymentscheduler.mapper.PaymentMapper;
 import com.flexpag.paymentscheduler.repository.PaymentRepository;
@@ -31,7 +31,11 @@ public class PaymentService {
         Payment payment = paymentMapper.mapToPayment(paymentDto);
 
         if (payment.getPayDate().isBefore(LocalDateTime.now())) {
-            throw new EntityNotSavedException(Payment.class, "Cannot save payment schedule");
+            throw new EntityNotSavedException(Payment.class, "Cannot save payment schedule. Verify the date");
+        }
+
+        if (payment.getAmount() <= 0) {
+            throw new EntityNotSavedException(Payment.class, "Amount cannot be empty or negative");
         }
 
         paymentRepository.save(payment);
@@ -39,19 +43,18 @@ public class PaymentService {
     }
 
     public List<PaymentDto> findAllPayments() {
-        return paymentRepository.findAll().stream().map(paymentMapper::mapToPaymentDto).collect(Collectors.toList());
+        return paymentRepository.findAll().stream().map(paymentMapper::mapToPaymentDto)
+                .collect(Collectors.toList());
     }
 
 
     public PaymentDto findPaymentById(Long id) {
-        Payment payment = paymentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(Payment.class, "Not found Payment with id + " + id));
+        Payment payment = getPayment(id);
         return paymentMapper.mapToPaymentDto(payment);
     }
 
     public PaymentDto updatePaymentById(Long id, LocalDateTime newDate) {
-        Payment payment = paymentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(Payment.class, "Not found Payment with id + " + id));
+        Payment payment = getPayment(id);
 
         if (payment.getPaymentStatus() != PaymentStatus.PENDING || newDate.isBefore(LocalDateTime.now())) {
             throw new EntityUpdateException(Payment.class, "Error updating Payment with id = " + id);
@@ -63,8 +66,7 @@ public class PaymentService {
     }
 
     public void deletePaymentById(Long id) {
-        Payment payment = paymentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(Payment.class, "Not found Payment with id + " + id));
+        Payment payment = getPayment(id);
 
         if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
             throw new EntityDeleteException(Payment.class, "Error deleting Payment with id = " + id);
@@ -72,6 +74,7 @@ public class PaymentService {
 
         paymentRepository.deleteById(id);
     }
+
 
     @Scheduled(fixedRate = 60000)
     @Async
@@ -86,9 +89,11 @@ public class PaymentService {
         }
 
         updatedPayments.forEach(updatedPayment -> updatedPayment.setPaymentStatus(PaymentStatus.PAID));
-
-        paymentRepository.saveAll(updatedPayments);
-        LOGGER.info("payments updated");
+        LOGGER.info(updatedPayments.size() + " payment(s) updated");
+    }
+    private Payment getPayment(Long id) {
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(Payment.class, "Payment not found with id + " + id));
     }
 
 }
