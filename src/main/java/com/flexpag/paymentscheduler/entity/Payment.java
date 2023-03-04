@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Payment extends BaseEntity {
+public class Payment implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
