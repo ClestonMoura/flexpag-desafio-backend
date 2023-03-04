@@ -6,7 +6,6 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,6 +18,7 @@ public class Payment {
     private Long id;
     private String client;
     private Double amount;
+    @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
     private LocalDateTime payDate;
 
