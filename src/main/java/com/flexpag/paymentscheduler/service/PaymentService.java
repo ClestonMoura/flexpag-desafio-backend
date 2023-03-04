@@ -10,10 +10,12 @@ import com.flexpag.paymentscheduler.exception.PaymentUpdateException;
 import com.flexpag.paymentscheduler.mapper.PaymentMapper;
 import com.flexpag.paymentscheduler.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +26,8 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
+
+    static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
     public PaymentDto savePayment(PaymentDto paymentDto) {
         Payment payment = paymentMapper.mapToPayment(paymentDto);
@@ -65,21 +69,27 @@ public class PaymentService {
         paymentRepository.deleteById(id);
     }
 
-    @Scheduled(cron = "@hourly")
-    @Async
+    @Scheduled(fixedRate = 60000)
+    @Transactional
     public void updatePaymentStatus() {
-        List<Payment> payments = findAllPayments().stream().map(paymentMapper::mapToPayment)
-                .collect(Collectors.toList());
-        if (payments.isEmpty()) {
+        List<Payment> updatedPayments = paymentRepository.findAll();
+
+        if (updatedPayments.isEmpty()) {
+            LOGGER.info("No payments updated");
             return;
         }
+
         LocalDateTime now = LocalDateTime.now();
-        for (Payment payment : payments) {
-            if (payment.getPayDate().isAfter(now)) {
-                payment.setPaymentStatus(PaymentStatus.PAID);
+
+        updatedPayments.forEach(updatedPayment -> {
+            if (updatedPayment.getPayDate().isBefore(now)) {
+                updatedPayment.setPaymentStatus(PaymentStatus.PAID);
             }
-        }
-        paymentRepository.saveAll(payments);
+        });
+
+        paymentRepository.saveAll(updatedPayments);
+        updatedPayments.clear();
+        LOGGER.info("payments updated");
     }
 
 //    private Payment getPayment(Long id) {

@@ -4,6 +4,7 @@ import com.flexpag.paymentscheduler.dto.PaymentDto;
 import com.flexpag.paymentscheduler.dto.PaymentRequestDto;
 import com.flexpag.paymentscheduler.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,9 @@ public class PaymentController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PaymentDto> updatePaymentById(@PathVariable("id") Long id,
-                                                        @RequestParam LocalDateTime newDate) {
+                                                        @RequestParam("newDate")
+                                                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                                                        LocalDateTime newDate) {
         PaymentDto paymentDto = paymentService.updatePaymentById(id, newDate);
         return new ResponseEntity<>(paymentDto, HttpStatus.OK);
     }

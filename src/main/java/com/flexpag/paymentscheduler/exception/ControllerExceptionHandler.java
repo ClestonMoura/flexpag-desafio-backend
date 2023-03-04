@@ -43,7 +43,18 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(PaymentUpdateException.class)
     public ResponseEntity<ErrorMessage> paymentUpdateException(PaymentUpdateException ex, WebRequest request) {
-        ErrorMessage message = new ErrorMessage(HttpStatus.BAD_REQUEST.value(),
+        ErrorMessage message = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                ex.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PaymentDeleteException.class)
+    public ResponseEntity<ErrorMessage> paymentDeleteException(PaymentDeleteException ex, WebRequest request) {
+        ErrorMessage message = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now(),
                 ex.getMessage(),
                 request.getDescription(false));
