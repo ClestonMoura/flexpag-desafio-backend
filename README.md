@@ -30,7 +30,7 @@ As seguintes rotas estão disponíveis pela API:
 
 ### `GET /api/payments/{id}`
 * Retorna um _payment_ identificado pelo parâmetro de caminho _id_.
-* Esta rota deve ser usada para verificar o _paymentStatus_.
+* Esta rota deve ser usada para verificar o `paymentStatus`.
 
 ### `POST /api/payments`
 * Cria um novo agendamento com `client`, `amount` e `payDate` especificados.
