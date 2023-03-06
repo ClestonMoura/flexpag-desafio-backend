@@ -5,6 +5,10 @@ import com.flexpag.paymentscheduler.entity.Payment;
 import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
 import org.springframework.stereotype.Component;
 
+/*
+    Classe responsável por mapear payment e paymentDto
+ */
+
 @Component
 public class PaymentMapper {
 

@@ -5,13 +5,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.LocalDateTime;
+
+/*
+    Classe responsável por lidar com as excessões em um contexto global.
+    Cada método desta classe retorna um ResponseEntity com uma mensagem para o usuário.
+ */
 
 @ControllerAdvice
 public class ExceptionHandlerController {
 
     @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ErrorMessage> entityNotFoundException(EntityNotFoundException ex) {
         ErrorMessage message = new ErrorMessage(
                 AppConstants.ENTITY_NOT_FOUND,
@@ -21,6 +28,7 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorMessage> globalExceptionHandler(Exception ex) {
         ErrorMessage message = new ErrorMessage(
                 AppConstants.ENTITY_ERROR,
@@ -30,6 +38,7 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(EntityNotSavedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorMessage> entityNotSavedException(EntityNotSavedException ex) {
         ErrorMessage message = new ErrorMessage(
                 AppConstants.ENTITY_NOT_SAVED,
@@ -39,6 +48,7 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(EntityUpdateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorMessage> entityUpdateException(EntityUpdateException ex) {
         ErrorMessage message = new ErrorMessage(
                 AppConstants.ENTITY_NOT_UPDATED,
@@ -48,6 +58,7 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(EntityDeleteException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<ErrorMessage> entityDeleteException(EntityDeleteException ex) {
         ErrorMessage message = new ErrorMessage(
                 AppConstants.ENTITY_NOT_DELETED,

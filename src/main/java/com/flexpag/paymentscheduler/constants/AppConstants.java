@@ -1,5 +1,9 @@
 package com.flexpag.paymentscheduler.constants;
 
+/*
+    Constantes para a categorização de errors internos da aplicação.
+ */
+
 public class AppConstants {
 
     private AppConstants() {

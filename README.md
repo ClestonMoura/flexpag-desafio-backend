@@ -22,6 +22,9 @@ A API possui apenas uma entidade: _PAYMENT_
 
 ## API
 
+A API está disponível em `http://localhost:8080` e possui rota para melhores testes
+usando o Swagger, acessando `http://localhost:8080/swagger-docs.html`.
+
 As seguintes rotas estão disponíveis pela API:
 
 ### `GET /api/payments`
