@@ -4,8 +4,8 @@ API de agendamento de pagamentos automatizados.
 Aplicação para fins de avaliação do desafio Flexpag Back end.
 
 A solução desenvolvida segue o contexto e fluxo esperado estabelecidos na descrição do
-desafio. Além disso, a aplicação possui a funcionalidade extra de pagamento automáticos
-e a implementação de _custom exception handling_ para melhores messagens ao usuário.
+desafio. Além disso, a aplicação possui a funcionalidade extra de pagamentos automáticos
+e a implementação de _custom exception handling_ para melhores messagens de erro ao usuário.
 
 ## Entidades
 
