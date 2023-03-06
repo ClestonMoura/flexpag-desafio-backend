@@ -2,6 +2,7 @@ package com.flexpag.paymentscheduler.controller;
 
 import com.flexpag.paymentscheduler.dto.PaymentDto;
 import com.flexpag.paymentscheduler.dto.PaymentRequestDto;
+import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
 import com.flexpag.paymentscheduler.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -20,8 +21,8 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping
-    public ResponseEntity<List<PaymentDto>> getAllPayments() {
-        List<PaymentDto> paymentDtoList = paymentService.findAllPayments();
+    public ResponseEntity<List<PaymentDto>> getAllPayments(@RequestParam(required = false)PaymentStatus status) {
+        List<PaymentDto> paymentDtoList = paymentService.findAllPayments(status);
 
         if (paymentDtoList.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -42,12 +43,24 @@ public class PaymentController {
         return new ResponseEntity<>(paymentDto, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PaymentDto> updatePaymentById(@PathVariable("id") Long id,
+    @PutMapping("/date/{id}")
+    public ResponseEntity<PaymentDto> updatePaymentDate(@PathVariable("id") Long id,
                                                         @RequestParam("newDate")
                                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                                                         LocalDateTime newDate) {
-        PaymentDto paymentDto = paymentService.updatePaymentById(id, newDate);
+        PaymentDto paymentDto = paymentService.updatePaymentDate(id, newDate);
+        return new ResponseEntity<>(paymentDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/type/{id}")
+    public ResponseEntity<PaymentDto> togglePaymentType(@PathVariable("id") Long id) {
+        PaymentDto paymentDto = paymentService.togglePaymentType(id);
+        return new ResponseEntity<>(paymentDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/status/{id}")
+    public ResponseEntity<PaymentDto> updatePaymentStatus(@PathVariable("id") Long id) {
+        PaymentDto paymentDto = paymentService.updatePaymentStatus(id);
         return new ResponseEntity<>(paymentDto, HttpStatus.OK);
     }
 

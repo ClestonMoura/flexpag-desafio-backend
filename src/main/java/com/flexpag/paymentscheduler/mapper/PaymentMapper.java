@@ -10,20 +10,22 @@ public class PaymentMapper {
 
     public Payment mapToPayment(PaymentDto paymentDto) {
         return Payment.builder()
-                .client(paymentDto.getClient())
+                .title(paymentDto.getTitle())
                 .amount(paymentDto.getAmount())
                 .paymentStatus(PaymentStatus.PENDING)
-                .payDate(paymentDto.getPayDate())
+                .paymentType(paymentDto.getPaymentType())
+                .paymentDate(paymentDto.getPaymentDate())
                 .build();
     }
 
     public PaymentDto mapToPaymentDto(Payment payment) {
         return PaymentDto.builder()
                 .id(payment.getId())
-                .client(payment.getClient())
+                .title(payment.getTitle())
                 .amount(payment.getAmount())
                 .paymentStatus(payment.getPaymentStatus())
-                .payDate(payment.getPayDate())
+                .paymentType(payment.getPaymentType())
+                .paymentDate(payment.getPaymentDate())
                 .build();
     }
 

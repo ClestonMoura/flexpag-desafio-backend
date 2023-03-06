@@ -3,6 +3,7 @@ package com.flexpag.paymentscheduler.service;
 import com.flexpag.paymentscheduler.dto.PaymentDto;
 import com.flexpag.paymentscheduler.entity.Payment;
 import com.flexpag.paymentscheduler.entity.enums.PaymentStatus;
+import com.flexpag.paymentscheduler.entity.enums.PaymentType;
 import com.flexpag.paymentscheduler.exception.*;
 import com.flexpag.paymentscheduler.mapper.PaymentMapper;
 import com.flexpag.paymentscheduler.repository.PaymentRepository;
@@ -27,11 +28,22 @@ public class PaymentService {
 
     static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
+    public List<PaymentDto> findAllPayments(PaymentStatus status) {
+
+        if (status != null) {
+            return paymentRepository.findAllByPaymentStatus(status).stream().map(paymentMapper::mapToPaymentDto)
+                    .collect(Collectors.toList());
+        }
+
+        return paymentRepository.findAll().stream().map(paymentMapper::mapToPaymentDto)
+                .collect(Collectors.toList());
+    }
+
     public PaymentDto savePayment(PaymentDto paymentDto) {
         Payment payment = paymentMapper.mapToPayment(paymentDto);
 
-        if (payment.getPayDate().isBefore(LocalDateTime.now())) {
-            throw new EntityNotSavedException(Payment.class, "Cannot save payment schedule. Verify the date");
+        if (payment.getPaymentDate().isBefore(LocalDateTime.now())) {
+            throw new EntityNotSavedException(Payment.class, "Invalid paymentDate");
         }
 
         if (payment.getAmount() <= 0) {
@@ -42,25 +54,54 @@ public class PaymentService {
         return paymentMapper.mapToPaymentDto(payment);
     }
 
-    public List<PaymentDto> findAllPayments() {
-        return paymentRepository.findAll().stream().map(paymentMapper::mapToPaymentDto)
-                .collect(Collectors.toList());
-    }
-
-
     public PaymentDto findPaymentById(Long id) {
         Payment payment = getPayment(id);
         return paymentMapper.mapToPaymentDto(payment);
     }
 
-    public PaymentDto updatePaymentById(Long id, LocalDateTime newDate) {
+    public PaymentDto updatePaymentDate(Long id, LocalDateTime newDate) {
         Payment payment = getPayment(id);
 
-        if (payment.getPaymentStatus() != PaymentStatus.PENDING || newDate.isBefore(LocalDateTime.now())) {
-            throw new EntityUpdateException(Payment.class, "Error updating Payment with id = " + id);
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new EntityUpdateException(Payment.class, "Cannot update paymentDate of Payment with status PAID");
         }
 
-        payment.setPayDate(newDate);
+        if (newDate.isBefore(LocalDateTime.now())) {
+            throw new EntityUpdateException(Payment.class, "Invalid paymentDate update");
+        }
+
+        payment.setPaymentDate(newDate);
+        paymentRepository.save(payment);
+        return paymentMapper.mapToPaymentDto(payment);
+    }
+
+    public PaymentDto togglePaymentType(Long id) {
+        Payment payment = getPayment(id);
+
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new EntityUpdateException(Payment.class, "Cannot updated type of Payment with status PAID");
+        }
+
+        payment.setPaymentType(payment.getPaymentType() ==
+                PaymentType.MANUAL ? PaymentType.AUTO : PaymentType.MANUAL);
+
+        paymentRepository.save(payment);
+        return paymentMapper.mapToPaymentDto(payment);
+    }
+
+    public PaymentDto updatePaymentStatus(Long id) {
+        Payment payment = getPayment(id);
+
+        if (payment.getPaymentType() == PaymentType.AUTO) {
+            throw new EntityUpdateException(Payment.class,
+                    "paymentStatus cannot be updated for Payment with type AUTO");
+        }
+
+        if (payment.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new EntityUpdateException(Payment.class, "Payment already has status PAID");
+        }
+
+        payment.setPaymentStatus(PaymentStatus.PAID);
         paymentRepository.save(payment);
         return paymentMapper.mapToPaymentDto(payment);
     }
@@ -69,19 +110,23 @@ public class PaymentService {
         Payment payment = getPayment(id);
 
         if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new EntityDeleteException(Payment.class, "Error deleting Payment with id = " + id);
+            throw new EntityDeleteException(Payment.class, "Cannot remove Payment with status PAID");
         }
 
         paymentRepository.deleteById(id);
     }
 
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 120000)
     @Async
     @Transactional
-    public void updatePaymentStatus() {
+    public void autoUpdatePaymentStatus() {
         List<Payment> updatedPayments = paymentRepository
-                .findByPaymentStatusAndPayDateIsLessThanEqual(PaymentStatus.PENDING, LocalDateTime.now());
+                .findByPaymentTypeAndPaymentStatusAndPaymentDateIsLessThanEqual(
+                        PaymentType.AUTO,
+                        PaymentStatus.PENDING,
+                        LocalDateTime.now()
+                );
 
         if (updatedPayments.isEmpty()) {
             LOGGER.info("No payments updated");
@@ -89,8 +134,9 @@ public class PaymentService {
         }
 
         updatedPayments.forEach(updatedPayment -> updatedPayment.setPaymentStatus(PaymentStatus.PAID));
-        LOGGER.info(updatedPayments.size() + " payment(s) updated");
+        LOGGER.info("{} payment(s) updated", updatedPayments.size());
     }
+
     private Payment getPayment(Long id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(Payment.class, "Payment not found with id + " + id));
