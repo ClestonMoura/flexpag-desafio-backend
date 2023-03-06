@@ -16,3 +16,9 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    operations-sorter: method
+    path: /swagger-docs.html

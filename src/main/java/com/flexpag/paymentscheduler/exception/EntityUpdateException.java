@@ -2,6 +2,10 @@ package com.flexpag.paymentscheduler.exception;
 
 import com.flexpag.paymentscheduler.entity.BaseEntity;
 
+/*
+    Classe responsável por lidar com errors se uma entidade não for atualizada.
+ */
+
 public class EntityUpdateException extends RuntimeException {
 
     private Class<? extends BaseEntity> entityClass;

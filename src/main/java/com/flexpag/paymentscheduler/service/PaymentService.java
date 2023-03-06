@@ -19,6 +19,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*
+    Classe responsável por implementar toda a lógica da aplicação
+ */
+
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -28,6 +32,7 @@ public class PaymentService {
 
     static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
+    //  Retorna uma lista de pagamentos
     public List<PaymentDto> findAllPayments(PaymentStatus status) {
 
         if (status != null) {
@@ -39,6 +44,7 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
+    //  Salva um pagamento
     public PaymentDto savePayment(PaymentDto paymentDto) {
         Payment payment = paymentMapper.mapToPayment(paymentDto);
 
@@ -54,11 +60,13 @@ public class PaymentService {
         return paymentMapper.mapToPaymentDto(payment);
     }
 
+    //  Retorna um pagamento com o respectivo id
     public PaymentDto findPaymentById(Long id) {
         Payment payment = getPayment(id);
         return paymentMapper.mapToPaymentDto(payment);
     }
 
+    //  Atualizada a data de um pagamento
     public PaymentDto updatePaymentDate(Long id, LocalDateTime newDate) {
         Payment payment = getPayment(id);
 
@@ -75,6 +83,7 @@ public class PaymentService {
         return paymentMapper.mapToPaymentDto(payment);
     }
 
+    //  Muda o tipo de um pagamento
     public PaymentDto togglePaymentType(Long id) {
         Payment payment = getPayment(id);
 
@@ -89,6 +98,7 @@ public class PaymentService {
         return paymentMapper.mapToPaymentDto(payment);
     }
 
+    // Atualiza o status de um pagamento do tipo MANUAL
     public PaymentDto updatePaymentStatus(Long id) {
         Payment payment = getPayment(id);
 
@@ -106,6 +116,7 @@ public class PaymentService {
         return paymentMapper.mapToPaymentDto(payment);
     }
 
+    //  Remove um pagamento com status PENDING
     public void deletePaymentById(Long id) {
         Payment payment = getPayment(id);
 
@@ -117,6 +128,8 @@ public class PaymentService {
     }
 
 
+    //  Atualiza o status de um pagamento do tipo AUTO automaticamente em um intervalo de tempo
+    //  O método logga quando há a quantidade de pagamentos atualizados
     @Scheduled(fixedRate = 120000)
     @Async
     @Transactional
@@ -137,6 +150,7 @@ public class PaymentService {
         LOGGER.info("{} payment(s) updated", updatedPayments.size());
     }
 
+    //  Método de auxílio para coletar um pagamento com o respectivo id
     private Payment getPayment(Long id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(Payment.class, "Payment not found with id + " + id));

@@ -2,6 +2,10 @@ package com.flexpag.paymentscheduler.exception;
 
 import com.flexpag.paymentscheduler.entity.BaseEntity;
 
+/*
+    Classe responsável por lidar com errors na remoção de uma entidade.
+ */
+
 public class EntityDeleteException extends RuntimeException {
 
     private Class<? extends BaseEntity> entityClass;

@@ -9,6 +9,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/*
+    Classe usada para as transferências realizadas pelos endpoints. Usada para evitar expor a entitade que
+    é armazenada no banco de dados.
+ */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
