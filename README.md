@@ -30,7 +30,7 @@ As seguintes rotas estão disponíveis pela API:
 lista de pagamentos especificos.
 
 ### `POST /api/payments`
-* Cria agendamento com `client`, `amount` e `payDate` especificados.
+* Cria agendamento com `client`, `amount`, `paymentDate` e `paymentType` especificados.
 * Retorna o _payment_ criado.
 * Exemplo de envio do json:
 ```JSON
